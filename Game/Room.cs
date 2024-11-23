@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Room : MonoBehaviour
@@ -13,16 +14,38 @@ public class Room : MonoBehaviour
     [SerializeField] GameObject bottomCorridor;
     [SerializeField] GameObject leftCorridor;
     [SerializeField] GameObject rightCorridor;
+
+    [SerializeField] GameObject staminaBuff;
+    [SerializeField] GameObject fireRateBuff;
+    [SerializeField] GameObject healthExpand;
+    [SerializeField] GameObject bulletBuff;
+    [SerializeField] GameObject AR;
+
+    [SerializeField] GameObject minimapDisplay;
     public bool roomCleared = false;
     public int waves = 0;
     public int enemiesLeft = 0;
 
-    private bool triggered = false;
+    public bool triggered = false;
 
+    public bool colorChange = false;
 
+    Dictionary<int,GameObject> dict = new Dictionary<int, GameObject>();
+
+    void Awake()
+    {
+        dict.Add(1,staminaBuff);
+        dict.Add(2,fireRateBuff);
+        dict.Add(4,AR);
+        dict.Add(3,healthExpand);
+    }
     void Update()
     {
-        if (triggered)
+        if(roomCleared && colorChange == false){
+            minimapDisplay.GetComponent<SpriteRenderer>().color = new Color(0.37f,0.71f,0.25f,0.25f);
+            colorChange = true;
+        }
+        if (triggered && roomCleared == false)
         {
             if (waves > 0 && enemiesLeft == 0)
             {
@@ -31,9 +54,19 @@ public class Room : MonoBehaviour
             }
             if (waves == 0 && enemiesLeft == 0)
             {
+                int rand;
+                if (GunScript.Instance.getGun() == GunContainer.AR){
+                    rand = Random.Range(1,3);
+                }
+                else{
+                    rand = Random.Range(1,4);
+                }
                 setCleared(true);
                 setDoors(false);
+                Instantiate(dict[rand],gameObject.transform.position,Quaternion.identity);
+                
             }
+            
         }
         
     }
@@ -60,7 +93,8 @@ public class Room : MonoBehaviour
             rightCorridor.SetActive(true);
         }
     }
-    private void setDoors(bool b)
+
+    public void setDoors(bool b)
     {
         if (topCorridor.activeSelf == true)
         {
@@ -87,7 +121,7 @@ public class Room : MonoBehaviour
             Debug.Log("triggered");
             triggered = true;
             setDoors(true);
-            waves += Random.Range(2,4);
+            waves += Random.Range(1,3);
        }
     }
     private void spawnWave()
@@ -104,4 +138,5 @@ public class Room : MonoBehaviour
     }
     public void enemyDeath(){enemiesLeft -= 1;}
     public void setCleared(bool b){roomCleared = b;}
+
 }

@@ -12,16 +12,23 @@ public class GunScript : MonoBehaviour
     public Gun gun;
     private float bulletlifespan = 3f;
 
+    public static GunScript Instance {get; private set;}
 
+    int bulletMultiplier = 1;
 
-    private float bulletSpeed = 25f;
+    float firerateMultiplier = 1f;
     void Start()
     {
         canFire = true;
         gun = GunContainer.pistol;
         mainCam = GameObject.FindGameObjectWithTag("MainCamera").GetComponent<Camera>();
     }
-
+    private void Awake()
+    {
+        if (Instance == null){
+            Instance = this;
+        }
+    }
     void Update()
     {
         if (Time.deltaTime == 0f)
@@ -41,6 +48,12 @@ public class GunScript : MonoBehaviour
         transform.rotation = Quaternion.Euler(0,0,rotZ);
         
     }
+
+    public void changeMultipliers(int _bulletMultiplier, float _firerateMultiplier)
+    {
+        bulletMultiplier += _bulletMultiplier;
+        firerateMultiplier -= _firerateMultiplier;
+    }
     void fireBullet(float spread = 0)
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
@@ -52,20 +65,32 @@ public class GunScript : MonoBehaviour
 
         Vector2 bulletDirection = mousePos - player.position;
         bulletDirection += Vector2.Perpendicular(bulletDirection) * UnityEngine.Random.Range(-spread,spread);
-        bulletRb.velocity = new Vector2(bulletDirection.x,bulletDirection.y).normalized * bulletSpeed;
-        FindAnyObjectByType<AudioManager>().Play("shoot");
+        bulletRb.velocity = new Vector2(bulletDirection.x,bulletDirection.y).normalized * 35f * gun.bulletSpeed;
+        newBullet.GetComponent<BulletScript>().setDamage(gun.damage);
+        FindAnyObjectByType<AudioManager>().Play("shoot",gun.pitch,gun.volume);
         Destroy(newBullet,bulletlifespan);
     }
-        private IEnumerator shootGun()
+    private IEnumerator shootGun()
     {
         canFire = false;
-        for(int i = 0; i<gun.bullets; i++)
+        if (StaminaScript.Instance.CanUseStamina())
+        {
+            for(int i = 0; i<gun.bullets*bulletMultiplier; i++)
         {
             fireBullet(gun.spread);
         }
-        yield return new WaitForSeconds(gun.fireRate);
+        StaminaScript.Instance.setRechargeTimer();
+        StaminaScript.Instance.LoseStamina(gun.staminaDrain);
+        }
+        yield return new WaitForSeconds(gun.fireRate*firerateMultiplier);
         canFire = true;
+    
 
 
+    }
+    public void setGun(Gun _gun){gun = _gun;}
+
+    public Gun getGun(){
+        return gun;
     }
 }

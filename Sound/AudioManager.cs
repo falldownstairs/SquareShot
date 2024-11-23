@@ -16,11 +16,11 @@ public class AudioManager : MonoBehaviour
 		if (instance != null)
 		{
 			Destroy(gameObject);
+			
 		}
 		else
 		{
 			instance = this;
-			DontDestroyOnLoad(gameObject);
 		}
 
 		foreach (Sound s in sounds)
@@ -33,7 +33,22 @@ public class AudioManager : MonoBehaviour
 		}
 	}
 
-	public void Play(string sound)
+	public void Play(string sound, float p = 0f, float v = 0f)
+	{
+		Sound s = Array.Find(sounds, item => item.name == sound);
+		if (s == null)
+		{
+			Debug.LogWarning("Sound: " + name + " not found!");
+			return;
+		}
+
+		s.source.volume = s.volume * (1f + UnityEngine.Random.Range(-s.volumeVariance / 2f, s.volumeVariance / 2f)) + v;
+		s.source.pitch = s.pitch * (1f + UnityEngine.Random.Range(-s.pitchVariance / 2f, s.pitchVariance / 2f)) + p;
+
+		s.source.Play();
+	}
+
+	public void Stop(string sound)
 	{
 		Sound s = Array.Find(sounds, item => item.name == sound);
 		if (s == null)
@@ -45,7 +60,7 @@ public class AudioManager : MonoBehaviour
 		s.source.volume = s.volume * (1f + UnityEngine.Random.Range(-s.volumeVariance / 2f, s.volumeVariance / 2f));
 		s.source.pitch = s.pitch * (1f + UnityEngine.Random.Range(-s.pitchVariance / 2f, s.pitchVariance / 2f));
 
-		s.source.Play();
+		s.source.Stop();
 	}
 
 }

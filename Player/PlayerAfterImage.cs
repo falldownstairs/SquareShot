@@ -12,7 +12,7 @@ public class PlayerAfterImage : MonoBehaviour
 
     private SpriteRenderer SR;
     private SpriteRenderer playerSR;
-    private Color color;
+
 
     private void OnEnable()
     {

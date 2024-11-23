@@ -4,8 +4,10 @@ using UnityEngine;
 public class RoomManagerScript : MonoBehaviour
 {
     [SerializeField] GameObject roomPrefab;
-    [SerializeField] private int maxRooms = 15;
-    [SerializeField] private int minRooms = 12;
+
+    [SerializeField] GameObject bossRoomPrefab;
+    [SerializeField] private int maxRooms;
+    [SerializeField] private int minRooms;
     int roomWidth = 64;
     int roomHeight = 64;
     int gridSizeX = 10;
@@ -23,6 +25,8 @@ public class RoomManagerScript : MonoBehaviour
         Vector2Int InitialRoomIIndex = new Vector2Int(gridSizeX/2,gridSizeY/2);
         GenerateInitialRoom(InitialRoomIIndex);
         roomQueue.Enqueue(InitialRoomIIndex);
+
+        roomArray[gridSizeX/2,gridSizeY/2].GetComponent<Room>().setCleared(true);
     }
     private void Update()
     {
@@ -60,10 +64,19 @@ public class RoomManagerScript : MonoBehaviour
             return false;
         
         roomCount++;
-        var newRoom = Instantiate(roomPrefab, GetPos(roomIndex), Quaternion.identity);
-        roomArray[x,y] = newRoom;
-        newRoom.name = $"room-{roomCount}";
-        GenerateDoor(newRoom,x,y);
+        if (roomCount < maxRooms){
+            var newRoom = Instantiate(roomPrefab, GetPos(roomIndex), Quaternion.identity);
+            roomArray[x,y] = newRoom;
+            newRoom.name = $"room-{roomCount}";
+            GenerateDoor(newRoom,x,y);
+        }
+        else
+        {
+            var bossRoom = Instantiate(bossRoomPrefab, GetPos(roomIndex), Quaternion.identity);
+            roomArray[x,y] = bossRoom;
+            bossRoom.name = $"room-boss";
+            GenerateDoor(bossRoom,x,y);
+        }
 
 
 

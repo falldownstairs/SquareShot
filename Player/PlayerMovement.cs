@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
+
  
 public class PlayerMovement : MonoBehaviour
 {
@@ -16,7 +18,11 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private float dashDuration;
     [SerializeField] private float dashCooldown;
 
+    [SerializeField] private GunScript gunScript;
 
+    private void Awake()
+    {
+    }
     void Update()
     {
         if (isDashing)
@@ -28,9 +34,10 @@ public class PlayerMovement : MonoBehaviour
         }
         PlayerInput = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical")).normalized;
 
-        if((canDash == true) && Input.GetButtonDown("Jump") == true)
+        if((canDash == true) && Input.GetButtonDown("Jump") == true && PlayerInput != new Vector2(0,0))
         {
             StartCoroutine(Dash());
+            StaminaScript.Instance.LoseStamina(7.5f);
         }
         
     
@@ -51,13 +58,13 @@ public class PlayerMovement : MonoBehaviour
         rb.velocity = moveForce;
     }
  
-
     private IEnumerator Dash()
     {
         canDash = false;
         isDashing = true;
         rb.velocity = PlayerInput * dashPower;
         FindAnyObjectByType<AudioManager>().Play("dash");
+        HealthScript.Instance.getIframes(dashCooldown +0.1f);
         yield return new WaitForSeconds(dashDuration);
         isDashing = false;
         yield return new WaitForSeconds(dashCooldown);

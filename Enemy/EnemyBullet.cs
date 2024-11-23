@@ -4,7 +4,8 @@ public class Enemybullet : MonoBehaviour
 {
     public HealthScript healthScript;
 
-    // Start is called before the first frame update
+    private float damage;
+
     void Start()
     {
         healthScript = GameObject.FindGameObjectWithTag("HealthManager").GetComponent<HealthScript>();
@@ -12,9 +13,9 @@ public class Enemybullet : MonoBehaviour
     }
     private void OnTriggerEnter2D(Collider2D collision)
     {
-       if(collision.gameObject.name == "player")
+       if(collision.gameObject.CompareTag("Player") && HealthScript.Instance.iframesActive() == false)
        {
-            healthScript.LoseHealth(10f);
+            healthScript.LoseHealth(damage);
             Destroy(gameObject);
        }
        else if(collision.gameObject.CompareTag("wall"))
@@ -23,4 +24,5 @@ public class Enemybullet : MonoBehaviour
        }
 
     }
+    public void setDamage(float d){damage = d;}
 }

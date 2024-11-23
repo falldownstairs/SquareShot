@@ -8,7 +8,6 @@ public class EnemyGunScript : MonoBehaviour
     public GameObject bullet;
     private float lifespan = 3f;
 
-    private float bulletSpeed = 25f;
     private Transform player;
     private bool canFire;
 
@@ -17,7 +16,7 @@ public class EnemyGunScript : MonoBehaviour
     void Start()
     {
         StartCoroutine(spawnTimer());
-        gun = GunContainer.badPistol;
+        gun = gameObject.GetComponentInParent<EnemyScript>().getGun();
     }
 
     // Update is called once per frame
@@ -25,15 +24,13 @@ public class EnemyGunScript : MonoBehaviour
     {
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<Transform>();
         float distancetoPlayer = (player.transform.position - transform.position).magnitude;
-        if(canFire == true & distancetoPlayer < 12f)
+        if(canFire == true & distancetoPlayer < gameObject.GetComponentInParent<EnemyScript>().getShootRange())
         {
             StartCoroutine(shootGun());
         }
 
         Vector3 rot = player.position - transform.position;
-
         float rotZ = Mathf.Atan2(rot.y,rot.x) * Mathf.Rad2Deg;
-
         transform.rotation = Quaternion.Euler(0,0,rotZ);
         
     }
@@ -45,7 +42,10 @@ public class EnemyGunScript : MonoBehaviour
 
         Vector2 bulletDirection = player.position - transform.position;
         bulletDirection += Vector2.Perpendicular(bulletDirection) * UnityEngine.Random.Range(-spread,spread);
-        bulletRb.velocity = new Vector2(bulletDirection.x,bulletDirection.y).normalized * bulletSpeed;
+        bulletRb.velocity = new Vector2(bulletDirection.x,bulletDirection.y).normalized * 27.5f * gun.bulletSpeed;
+        newBullet.GetComponent<SpriteRenderer>().color = gameObject.GetComponentInParent<EnemyScript>().getSR().color;
+        newBullet.GetComponent<TrailRenderer>().startColor = gameObject.GetComponentInParent<EnemyScript>().getSR().color;
+        newBullet.GetComponent<Enemybullet>().setDamage(gun.damage);
         Destroy(newBullet,lifespan);
     }
     private IEnumerator shootGun()
@@ -55,6 +55,7 @@ public class EnemyGunScript : MonoBehaviour
         {
             fireBullet(gun.spread);
         }
+        FindAnyObjectByType<AudioManager>().Play("shoot",gun.pitch,gun.volume);
         yield return new WaitForSeconds(gun.fireRate);
         canFire = true;
 
